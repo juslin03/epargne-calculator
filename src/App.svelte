@@ -36,7 +36,7 @@
 	<button on:click={calculer}>Calculer</button>
 	{#if hasCalculated}
 		<div in:fly={{ y: 100, duration: 1000 }}>
-		<h2 style='text-decoration: underline'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
+		<h2 style='text-decoration: underline'>Montant Ã©pargnÃ© en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
 		<strong class="somme">{somme} <sup>XOF</sup></strong>
 	</div>
 	{/if}
