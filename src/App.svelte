@@ -59,7 +59,7 @@ function handleClick() {
 		<button on:click={calculer}>Calculer</button>
 		{#if hasCalculated}
 			<div in:fly={{ y: 100, duration: 1000 }}>
-			<h2 style='text-decoration: underline'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
+			<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
 			<strong class="somme">{somme} <sup>XOF</sup></strong>
 		</div>
 		{/if}
@@ -110,7 +110,7 @@ function handleClick() {
 		border: none;
 		border-radius: 7px;
 		padding: 2rem;
-		width: 50%;
+		/* width: 50%; */
 		box-sizing: border-box;
 		box-shadow: 0 8px 40px;
 	}
@@ -145,7 +145,7 @@ function handleClick() {
 	}
 	.somme {
 		display: block;
-		font-size: 5rem;
+		font-size: 3.5rem;
 		color: green;
 	}
 	
