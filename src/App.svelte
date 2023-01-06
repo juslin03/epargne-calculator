@@ -34,8 +34,8 @@ function handleMouseLeave() {
 	note = false;
 }
 
-function handleFocus() {
-	showModal = !showModal;
+function handleClick() {
+	showModal = true;
 }
 </script>
 
@@ -43,7 +43,7 @@ function handleFocus() {
 	<div class="container">
 		<div class="flex flex-row">
 			<h1>Challenge {n} {n > 1 ? 'semaines' : 'semaine'}</h1>
-			<svg xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;" fill="none" on:focus={handleFocus} on:mouseover={handleMouseOver} on:mouseleave={handleMouseLeave} viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+			<svg xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;" fill="none" on:click={handleClick} on:mouseover={handleMouseOver} on:mouseleave={handleMouseLeave} viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
 			</svg>
 			{#if note}
@@ -68,19 +68,15 @@ function handleFocus() {
 	{#if showModal}
 	<Modal on:close="{() => showModal = false}">
 		<h2 slot="header">
-			Principe du challenge
+			Principe du challenge | Exemple
 		</h2>
 
 		<ol class="definition-list">
-			<li>of or relating to modality in logic</li>
-			<li>containing provisions as to the mode of procedure or the manner of taking effect —used of a contract or legacy</li>
-			<li>of or relating to a musical mode</li>
-			<li>of or relating to structure as opposed to substance</li>
-			<li>of, relating to, or constituting a grammatical form or category characteristically indicating predication</li>
-			<li>of or relating to a statistical mode</li>
+			<li>Si je mets <code>100</code> frs pour la semaine 1</li>
+			<li>Alors, la semaine suivante, je mettrai <code>100 + 100</code> et ainsi de suite...</li>
 		</ol>
 
-		<a href="https://www.merriam-webster.com/dictionary/modal">merriam-webster.com</a>
+		<a href="https://github.com/juslin03">Suivez-moi sur github</a>
 	</Modal>
 {/if}
 
