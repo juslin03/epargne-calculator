@@ -134,7 +134,7 @@ function handleClick() {
 	}
 	
 	div button, input {
-		border: none;
+		border: 1px solid #bbb;
 		border-radius: 25px;
 		font-size: 1.4rem;
 		margin-top: 5px;
