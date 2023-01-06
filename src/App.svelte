@@ -1,15 +1,24 @@
 <script>
 	import { fly } from 'svelte/transition';
+	import { onMount } from 'svelte/internal';
 	import Modal from './Modal.svelte';
 	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false, showModal = false;
-	function calculer () {
+	let rateData, totalToConvert = 0;
+	let montantEnEuro = 0;
+	async function calculer () {
 		somme = 0;
 		for(let i = 1; i <= n; i++) {
 			somme = somme + (montant * i)
 		}
+		totalToConvert = somme;
 		somme = somme.toString();
 		somme = chunkRight(somme).join('.');
 		hasCalculated = true;
+		if (hasCalculated) {
+			let response = await fetch(`https://api.getgeoapi.com/v2/currency/convert?api_key=0986567706a51ddcab3d67b8a0d58b210db512fe&from=XOF&to=EUR&amount=${totalToConvert}&format=json`);
+			const { rates } = await response.json();
+			montantEnEuro = rates['EUR']?.rate_for_amount;
+		}
 	}
 	
 	function chunkRight (str, size = 3) {
@@ -37,6 +46,7 @@ function handleMouseLeave() {
 function handleClick() {
 	showModal = true;
 }
+
 </script>
 
 <section>
@@ -59,9 +69,11 @@ function handleClick() {
 		<button on:click={calculer}>Calculer</button>
 		{#if hasCalculated}
 			<div in:fly={{ y: 100, duration: 1000 }}>
-			<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
-			<strong class="somme">{somme} <sup>XOF</sup></strong>
-		</div>
+				<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
+				<strong class="somme">{somme} <sup>XOF</sup></strong>
+				<!-- <div>{JSON.stringify(rateData)}</div> -->
+				<small class="italic">(Soit ~ {Math.floor(montantEnEuro)} EUR)</small>
+			</div>
 		{/if}
 	</div>
 
@@ -83,7 +95,9 @@ function handleClick() {
 </section>
 
 <style>
-
+	.italic {
+		font-style: italic;
+	}
 	.w-6 {
 		width: 1.95rem;
 	}
