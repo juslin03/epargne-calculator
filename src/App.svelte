@@ -1,6 +1,7 @@
 <script>
-	import { fade, fly } from 'svelte/transition';
-	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false;
+	import { fly } from 'svelte/transition';
+	import Modal from './Modal.svelte';
+	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false, showModal = false;
 	function calculer () {
 		somme = 0;
 		for(let i = 1; i <= n; i++) {
@@ -32,13 +33,17 @@ function handleMouseOver() {
 function handleMouseLeave() {
 	note = false;
 }
+
+function handleFocus() {
+	showModal = !showModal;
+}
 </script>
 
 <section>
 	<div class="container">
 		<div class="flex flex-row">
 			<h1>Challenge {n} {n > 1 ? 'semaines' : 'semaine'}</h1>
-			<svg xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;" fill="none" on:mouseover={handleMouseOver} on:mouseleave={handleMouseLeave} viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+			<svg xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;" fill="none" on:focus={handleFocus} on:mouseover={handleMouseOver} on:mouseleave={handleMouseLeave} viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
 				<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
 			</svg>
 			{#if note}
@@ -59,6 +64,26 @@ function handleMouseLeave() {
 		</div>
 		{/if}
 	</div>
+
+	{#if showModal}
+	<Modal on:close="{() => showModal = false}">
+		<h2 slot="header">
+			Principe du challenge
+		</h2>
+
+		<ol class="definition-list">
+			<li>of or relating to modality in logic</li>
+			<li>containing provisions as to the mode of procedure or the manner of taking effect —used of a contract or legacy</li>
+			<li>of or relating to a musical mode</li>
+			<li>of or relating to structure as opposed to substance</li>
+			<li>of, relating to, or constituting a grammatical form or category characteristically indicating predication</li>
+			<li>of or relating to a statistical mode</li>
+		</ol>
+
+		<a href="https://www.merriam-webster.com/dictionary/modal">merriam-webster.com</a>
+	</Modal>
+{/if}
+
 </section>
 
 <style>
