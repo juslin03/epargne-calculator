@@ -2,13 +2,25 @@
 	import { fly } from 'svelte/transition';
 	import { onMount } from 'svelte/internal';
 	import Modal from './Modal.svelte';
+
+	const RATE_EURO = 0.0015384615384615;
+	const RATE_DOLLARS = 0.0015710919088767;
 	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false, showModal = false;
-	let rateData, totalToConvert = 0;
+	let totalToConvert = 0;
 	let montantEnEuro = 0;
+	let montantEnDollar = 0;
+	let tableRows = "";
 	async function calculer () {
 		somme = 0;
+		tableRows = "";
 		for(let i = 1; i <= n; i++) {
-			somme = somme + (montant * i)
+			somme +=  montant * i;
+			tableRows += `<tr>
+							<td>Semaine n°${i}</td>
+							<td>${montant * i} <small>XOF</small></td>
+							<td>$${Math.round(montant * i * RATE_DOLLARS)}</td>
+							<td>${Math.round(montant * i * RATE_EURO)} €</td>
+						  </tr>`
 		}
 		totalToConvert = somme;
 		somme = somme.toString();
@@ -16,8 +28,14 @@
 		hasCalculated = true;
 		if (hasCalculated) {
 			let response = await fetch(`https://api.getgeoapi.com/v2/currency/convert?api_key=0986567706a51ddcab3d67b8a0d58b210db512fe&from=XOF&to=EUR&amount=${totalToConvert}&format=json`);
-			const { rates } = await response.json();
-			montantEnEuro = rates['EUR']?.rate_for_amount;
+			if (response.status === 403) {
+				montantEnEuro = totalToConvert * RATE_EURO;
+				montantEnDollar = totalToConvert * RATE_DOLLARS;
+			} else {
+				const { rates } = await response.json();
+				montantEnEuro = rates['EUR']?.rate_for_amount;
+				montantEnDollar = totalToConvert * RATE_DOLLARS;
+			}
 		}
 	}
 	
@@ -68,11 +86,22 @@ function handleClick() {
 		<input type="number" min={0} id="duree" bind:value={n} placeholder="Ex: 2" />
 		<button on:click={calculer}>Calculer</button>
 		{#if hasCalculated}
-			<div in:fly={{ y: 100, duration: 1000 }}>
+			<div class="result" in:fly={{ y: 100, duration: 1000 }}>
 				<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
 				<strong class="somme">{somme} <sup>XOF</sup></strong>
-				<!-- <div>{JSON.stringify(rateData)}</div> -->
-				<small class="italic">(Soit ~ {Math.floor(montantEnEuro)} EUR)</small>
+				<small class="italic">(Soit ~ <strong>{Math.floor(montantEnEuro)} €</strong> / <strong>${Math.floor(montantEnDollar)}</strong>)</small>
+				<div>
+					<h4 style="text-decoration: underline;margin-bottom: -10px;">Details dans le tableau ci-dessous</h4>
+					<table class="styled-table">
+						<thead>
+							<th>Semaine</th>
+							<th>Montant (FCFA/XOF)</th>
+							<th>Montant (Dollar)</th>
+							<th>Montant (Euro)</th>
+						</thead>
+						<tbody>{@html tableRows}</tbody>
+					</table>
+				</div>
 			</div>
 		{/if}
 	</div>
@@ -93,6 +122,9 @@ function handleClick() {
 {/if}
 
 </section>
+<footer class="license">
+	Powered With <span style="color: red;">&hearts;</span> by <a href="https://eyalogroup.com" target="_blank" rel="noreferrer">EYALO GROUP</a>
+</footer>
 
 <style>
 	.italic {
@@ -124,7 +156,7 @@ function handleClick() {
 		border: none;
 		border-radius: 7px;
 		padding: 2rem;
-		/* width: 50%; */
+		width: 100%;
 		box-sizing: border-box;
 		box-shadow: 0 8px 40px;
 	}
@@ -173,5 +205,39 @@ function handleClick() {
 		position: absolute;
 		z-index: 1;
 		right: 23.5rem;
+	}
+
+	table.styled-table {
+		width: 100%;
+		padding: 1.5rem;
+		text-align: center;
+	}
+
+	table.styled-table {
+		border-collapse: collapse;
+		margin: 25px 0;
+		font-size: 0.9em;
+		font-family: sans-serif;
+		min-width: 400px;
+	}
+	table.styled-table thead th {
+		background-color: #009879;
+		color: #ffffff;
+		text-align: left;
+	}
+
+	table.styled-table th,
+	table.styled-table td {
+		padding: 12px 15px;
+	}
+	table.styled-table tbody tr {
+		border-bottom: 1px solid #989797;
+	}
+
+	footer {
+		position: relative;
+		bottom: 0;
+		text-align: center;
+		margin-top: 5rem;
 	}
 </style>
