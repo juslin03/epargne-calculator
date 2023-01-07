@@ -3,8 +3,8 @@
 	import { onMount } from 'svelte/internal';
 	import Modal from './Modal.svelte';
 
-	const RATE_EURO = 0.0015384615384615;
-	const RATE_DOLLARS = 0.0015710919088767;
+	const RATE_EURO = 0.0015;
+	const RATE_DOLLARS = 0.00165;
 	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false, showModal = false;
 	let totalToConvert = 0;
 	let montantEnEuro = 0;
