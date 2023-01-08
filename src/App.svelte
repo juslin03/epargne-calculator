@@ -15,11 +15,13 @@
 		tableRows = "";
 		for(let i = 1; i <= n; i++) {
 			somme +=  montant * i;
+			const dollars = montant * i * RATE_DOLLARS;
+			const euros = montant * i * RATE_EURO;
 			tableRows += `<tr>
 							<td>Semaine n°${i}</td>
 							<td>${montant * i} <small>XOF</small></td>
-							<td>$${Math.round(montant * i * RATE_DOLLARS)}</td>
-							<td>${Math.round(montant * i * RATE_EURO)} €</td>
+							<td>$${parseFloat(dollars.toFixed(2))}</td>
+							<td>${parseFloat(euros.toFixed(2))} €</td>
 						  </tr>`
 		}
 		totalToConvert = somme;
@@ -29,12 +31,12 @@
 		if (hasCalculated) {
 			let response = await fetch(`https://api.getgeoapi.com/v2/currency/convert?api_key=0986567706a51ddcab3d67b8a0d58b210db512fe&from=XOF&to=EUR&amount=${totalToConvert}&format=json`);
 			if (response.status === 403) {
-				montantEnEuro = totalToConvert * RATE_EURO;
-				montantEnDollar = totalToConvert * RATE_DOLLARS;
+				montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+				montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
 			} else {
 				const { rates } = await response.json();
-				montantEnEuro = rates['EUR']?.rate_for_amount;
-				montantEnDollar = totalToConvert * RATE_DOLLARS;
+				montantEnEuro = parseFloat(Number(rates['EUR']?.rate_for_amount).toFixed(2));
+				montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
 			}
 		}
 	}
@@ -89,7 +91,7 @@ function handleClick() {
 			<div class="result" in:fly={{ y: 100, duration: 1000 }}>
 				<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
 				<strong class="somme">{somme} <sup>XOF</sup></strong>
-				<small class="italic">(Soit ~ <strong>{Math.floor(montantEnEuro)} €</strong> / <strong>${Math.floor(montantEnDollar)}</strong>)</small>
+				<small class="italic">(Soit ~ <strong>{montantEnEuro} €</strong> / <strong>${montantEnDollar}</strong>)</small>
 				<div>
 					<h4 style="text-decoration: underline;margin-bottom: -10px;">Details dans le tableau ci-dessous</h4>
 					<table class="styled-table">
