@@ -4,7 +4,7 @@
 	import Modal from './Modal.svelte';
 
 	const RATE_EURO = 0.0015;
-	const RATE_DOLLARS = 0.00165;
+	const RATE_DOLLARS = 0.0016;
 	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false, showModal = false;
 	let totalToConvert = 0;
 	let montantEnEuro = 0;
