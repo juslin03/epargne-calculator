@@ -1,127 +1,175 @@
 <script>
 	import { fly } from 'svelte/transition';
 	import { onMount } from 'svelte/internal';
-	import Modal from './Modal.svelte';
+	import typesData from './data';
 
 	const RATE_EURO = 0.0015;
 	const RATE_DOLLARS = 0.0016;
-	let montant = 0, n = 0, somme = 0, hasCalculated = false, note = false, showModal = false;
-	let totalToConvert = 0;
-	let montantEnEuro = 0;
-	let montantEnDollar = 0;
-	let tableRows = "";
+	let montant = 0;
+	let	n = 0;
+	let	somme = 0;
+	let	hasCalculated = false;
+	let	totalToConvert = 0;
+	let	montantEnEuro = 0;
+	let	montantEnDollar = 0;
+	let	tableRows = "";
+	let isOnline = false;
+	let type;
+	let constant = false;
+	$: tag = typesData.find(t => t.id === type);
+
 	async function calculer () {
 		somme = 0;
 		tableRows = "";
-		for(let i = 1; i <= n; i++) {
+		if (!constant) {
+			for(let i = 1; i <= n; i++) {
 			somme +=  montant * i;
 			const dollars = montant * i * RATE_DOLLARS;
 			const euros = montant * i * RATE_EURO;
 			tableRows += `<tr>
-							<td>Semaine n°${i}</td>
-							<td>${montant * i} <small>XOF</small></td>
+							<td>${tag?.singleTag} n°${i}</td>
+							<td>${montant * i} <small style="font-size:10px;">FCFA</small></td>
 							<td>$${parseFloat(dollars.toFixed(2))}</td>
-							<td>${parseFloat(euros.toFixed(2))} €</td>
+							<td>${parseFloat(euros.toFixed(2))}€</td>
 						  </tr>`
-		}
-		totalToConvert = somme;
-		somme = somme.toString();
-		somme = chunkRight(somme).join('.');
-		hasCalculated = true;
-		if (hasCalculated) {
-			let response = await fetch(`https://api.getgeoapi.com/v2/currency/convert?api_key=0986567706a51ddcab3d67b8a0d58b210db512fe&from=XOF&to=EUR&amount=${totalToConvert}&format=json`);
-			if (response.status === 403) {
-				montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
-				montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
-			} else {
-				const { rates } = await response.json();
-				montantEnEuro = parseFloat(Number(rates['EUR']?.rate_for_amount).toFixed(2));
-				montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+			}
+			totalToConvert = somme;
+			somme = somme.toString();
+			somme = chunkRight(somme).join('.');
+			hasCalculated = true;
+			if (hasCalculated) {
+				try {
+					if (isOnline) {
+						let response = await fetch(`https://api.getgeoapi.com/v2/currency/convert?api_key=0986567706a51ddcab3d67b8a0d58b210db512fe&from=XOF&to=EUR&amount=${totalToConvert}&format=json`);
+						if (response.status === 403) {
+							montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+							montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+						} else {
+							const { rates } = await response.json();
+							montantEnEuro = parseFloat(Number(rates['EUR']?.rate_for_amount).toFixed(2));
+							montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+						}
+					} else {
+						montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+						montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+					}
+				} catch (error) {
+					if (error.message === 'Failed to fetch') {
+						montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+						montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+					}
+				}
+			}
+		} else {
+			for(let i = 1; i <= n; i++) {
+			somme +=  montant;
+			const dollars = montant * RATE_DOLLARS;
+			const euros = montant * RATE_EURO;
+			tableRows += `<tr>
+							<td>${tag?.singleTag} n°${i}</td>
+							<td>${montant} <small style="font-size:10px;">FCFA</small></td>
+							<td>$${parseFloat(dollars.toFixed(2))}</td>
+							<td>${parseFloat(euros.toFixed(2))}€</td>
+						  </tr>`
+			}
+			totalToConvert = somme;
+			somme = somme.toString();
+			somme = chunkRight(somme).join('.');
+			hasCalculated = true;
+			if (hasCalculated) {
+				try {
+					if (isOnline) {
+						let response = await fetch(`https://api.getgeoapi.com/v2/currency/convert?api_key=0986567706a51ddcab3d67b8a0d58b210db512fe&from=XOF&to=EUR&amount=${totalToConvert}&format=json`);
+						if (response.status === 403) {
+							montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+							montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+						} else {
+							const { rates } = await response.json();
+							montantEnEuro = parseFloat(Number(rates['EUR']?.rate_for_amount).toFixed(2));
+							montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+						}
+					} else {
+						montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+						montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+					}
+				} catch (error) {
+					if (error.message === 'Failed to fetch') {
+						montantEnEuro = parseFloat((totalToConvert * RATE_EURO).toFixed(2));
+						montantEnDollar = parseFloat((totalToConvert * RATE_DOLLARS).toFixed(2));
+					}
+				}
 			}
 		}
 	}
 	
+
+	onMount(() => {
+		isOnline = navigator.onLine;
+	});
+	
 	function chunkRight (str, size = 3) {
-  if (typeof str === 'string') {
-    const length = str.length;
-    const chunks = Array(Math.ceil(length / size));
-    if (length) {
-      chunks[0] = str.slice(0, length % size || size);
-      for (let i = 1, index = chunks[0].length; index < length; i++) {
-        chunks[i] = str.slice(index, index += size)
-      }
-    }
-    return chunks
-  }
-}
-
-function handleMouseOver() {
-	note = true;
-}
-
-function handleMouseLeave() {
-	note = false;
-}
-
-function handleClick() {
-	showModal = true;
-}
+		if (typeof str === 'string') {
+			const length = str.length;
+			const chunks = Array(Math.ceil(length / size));
+			if (length) {
+				chunks[0] = str.slice(0, length % size || size);
+				for (let i = 1, index = chunks[0].length; index < length; i++) {
+					chunks[i] = str.slice(index, index += size)
+				}
+			}
+			return chunks
+		}
+	}
 
 </script>
 
 <section>
 	<div class="container">
-		<div class="flex flex-row">
-			<h1>Challenge {n !== 0 ? n : 'X'} {n > 1 ? 'semaines' : 'semaine'}</h1>
-			<svg xmlns="http://www.w3.org/2000/svg" style="cursor: pointer;" fill="none" on:click={handleClick} on:mouseover={handleMouseOver} on:mouseleave={handleMouseLeave} viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-			</svg>
-			{#if note}
-				<span class="hover-title">Comment ça marche ?</span>
-			{/if}
+		<div class="flex flex-col">
+			<h1>Challenge épargne {n > 0 ? n + ' ' + tag?.tag : 'X' + ' ' + tag?.tag}</h1>
+			<p style="font-style: italic; font-size: 14px; font-weight: 400; color: gray;"><cite>« A tes résolutions dépendra ton succès ! »</cite></p>
 		</div>
 		  
-		<label for="montant">Entrer le montant</label>
-		<input type="number" min={0} id="montant" bind:value={montant} placeholder="Ex: 2000" />
-	
-		<label for="duree">Entrer le nombre de semaines</label>
-		<input type="number" min={0} id="duree" bind:value={n} placeholder="Ex: 2" />
-		<button on:click={calculer}>Calculer</button>
-		{#if hasCalculated}
-			<div class="result" in:fly={{ y: 100, duration: 1000 }}>
-				<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? 'semaines' : 'semaine'}</h2>
-				<strong class="somme">{somme} <sup>XOF</sup></strong>
-				<small class="italic">(Soit ~ <strong>{montantEnEuro} €</strong> / <strong>${montantEnDollar}</strong>)</small>
-				<div>
-					<h4 style="text-decoration: underline;margin-bottom: -10px;">Details dans le tableau ci-dessous</h4>
-					<table class="styled-table">
-						<thead>
-							<th>Semaine</th>
-							<th>Montant (FCFA/XOF)</th>
-							<th>Montant (Dollar)</th>
-							<th>Montant (Euro)</th>
-						</thead>
-						<tbody>{@html tableRows}</tbody>
-					</table>
-				</div>
+		<div>
+			<label for="type">Choisir le type d'epargne</label>
+			<select bind:value={type} id="type">
+				{#each typesData as {id, name}}
+					<option value={id}>{name}</option>
+				{/each}
+			</select>
+			<label for="montant">Entrer le montant</label>
+			<input type="number" min={0} id="montant" bind:value={montant} placeholder="Ex: 100" />
+		
+			<label for="duree">Entrer le nombre {type === 7 ? "d'" + tag?.tag : 'de ' + tag?.tag}</label>
+			<input type="number" min={0} id="duree" bind:value={n} placeholder="Ex: 2" />
+			<div class="flex flex-row">
+				<label for="same">Montant d'épargne fixe ?</label>
+				<input type="checkbox" id="same" bind:checked={constant} />{constant ? 'Oui' : ''}
 			</div>
-		{/if}
+			<button on:click={calculer}>Calculer</button>
+
+
+			{#if hasCalculated}
+				<div class="result" in:fly={{ y: 100, duration: 1000 }}>
+					<h2 style='text-decoration: underline; font-size: 1rem;'>Montant épargné en {n} {n > 1 ? tag?.tag : tag?.singleTag.toLowerCase()}</h2>
+					<strong class="somme">{somme} <sup>FCFA</sup></strong>
+					<small class="italic">(Soit ~ <strong>{montantEnEuro}€</strong> / <strong>${montantEnDollar}</strong>)</small>
+					<div>
+						<h4 style="text-decoration: underline;margin-bottom: -10px;">Détails dans le tableau ci-dessous</h4>
+						<table class="styled-table">
+							<thead>
+								<th>{tag?.singleTag}</th>
+								<th>Montant (FCFA/XOF)</th>
+								<th>Montant (Dollar)</th>
+								<th>Montant (Euro)</th>
+							</thead>
+							<tbody>{@html tableRows}</tbody>
+						</table>
+					</div>
+				</div>
+			{/if}
+		</div>
 	</div>
-
-	{#if showModal}
-	<Modal on:close="{() => showModal = false}">
-		<h2 slot="header">
-			Principe du challenge | Exemple
-		</h2>
-
-		<ol class="definition-list">
-			<li>Si je mets <code>100</code> frs pour la semaine 1</li>
-			<li>Alors, la semaine suivante, je mettrai <code>100 + 100</code> et ainsi de suite...</li>
-		</ol>
-
-		<a href="https://github.com/juslin03">Suivez-moi sur github</a>
-	</Modal>
-{/if}
 
 </section>
 <footer class="license">
@@ -132,16 +180,12 @@ function handleClick() {
 	.italic {
 		font-style: italic;
 	}
-	.w-6 {
-		width: 1.95rem;
-	}
-
-	.h-6 {
-		height: 1.95rem;
-	}
 
 	.flex {
 		display: flex;
+	}
+	.flex-col {
+		flex-direction: column;
 	}
 
 	.flex-row {
@@ -164,16 +208,15 @@ function handleClick() {
 	}
 	h1 {
 		font-size: 2rem;
-		border: 4px solid rgb(236, 99, 7);
+		font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+		color: rgb(236, 99, 7);
+		font-weight: 900;
 		padding-left: 4px;
 		padding-right: 4px;
-		box-shadow: 0 0 20px rgb(236, 99, 7);
-		padding-top: 3px;
-		padding-bottom: 3px;
-		margin-right: 10px;
 		width: auto;
 		text-align: center;
 	}
+
 	div {
 		display: flex;
 		flex-direction: column;
@@ -184,12 +227,23 @@ function handleClick() {
 	div button, input {
 		border: 1px solid #bbb;
 		border-radius: 25px;
-		font-size: 1.4rem;
-		margin-top: 5px;
+		font-size: 1.025rem;
+		margin-bottom: 10px;
 		padding-left: 1.25rem;
 		padding-right: 1.25rem;
 		cursor: pointer;
-		box-shadow: 0px 8px 13px rgba(032, 032, 032, .6);
+	}
+	
+	input[type="number"] {
+		margin-top: 5px;
+	}
+
+	button {
+		margin-top: 1.4rem;
+	}
+
+	div > input[type="checkbox"] {
+		margin: 5px;
 	}
 	.somme {
 		display: block;
@@ -201,12 +255,6 @@ function handleClick() {
 		font-size: .90125rem;
 		color: green;
 		font-weight: 600;
-	}
-
-	.hover-title {
-		position: absolute;
-		z-index: 1;
-		right: 23.5rem;
 	}
 
 	table.styled-table {
@@ -228,12 +276,8 @@ function handleClick() {
 		text-align: left;
 	}
 
-	table.styled-table th,
-	table.styled-table td {
+	table.styled-table th {
 		padding: 12px 15px;
-	}
-	table.styled-table tbody tr {
-		border-bottom: 1px solid #989797;
 	}
 
 	footer {
