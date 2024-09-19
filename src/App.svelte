@@ -173,7 +173,7 @@
 
 </section>
 <footer class="license">
-	Powered With <span style="color: red;">&hearts;</span> by <a href="https://eyalogroup.com" target="_blank" rel="noreferrer">EYALO GROUP</a>
+	Powered With <span style="color: red;">&hearts;</span> by <a href="https://juslin.dev" target="_blank" rel="noreferrer">Juslin</a>
 </footer>
 
 <style>
